@@ -339,6 +339,40 @@ def detect_critical_issue(text):
     return False
 
 
+# async def voice_chat(turn_context: TurnContext, user_query: str):
+#     if not user_query:
+#         return "في انتظار اوامرك"
+#     if clean_text(user_query) in ["إنهاء", "خروج"]:
+#         print("👋 Goodbye!")
+#         return "مع السلامة"
+#     if detect_critical_issue(user_query):
+#         return "هذه المشكلة تحتاج إلى تدخل بشري. سأقوم بالاتصال بخدمة العملاء لدعمك."
+#     response = await get_response(user_query)
+#     activity: Activity = turn_context.activity
+#     bot_id = activity.recipient.id
+#     return Activity(
+#     type=ActivityTypes.message,
+#     from_property=ChannelAccount(id=bot_id),  # Bot as the sender
+#     text=response)
+#     # return response
+
+
+
+# class MyBot(ActivityHandler):
+#     async def on_message_activity(self, turn_context: TurnContext):
+#         user_query = turn_context.activity.text
+#         print(f"Received message: {user_query}")
+#         response_text =  await voice_chat(turn_context, user_query)
+#         await turn_context.send_activity(response_text)
+
+#     async def on_members_added_activity(
+#         self, members_added: ChannelAccount, turn_context: TurnContext
+#     ):
+#         for member in members_added:
+#             if member.id != turn_context.activity.recipient.id:
+#                 welcome_message = "مرحبًا! كيف يمكنني مساعدتك اليوم؟"
+#                 await turn_context.send_activity(welcome_message)
+
 async def voice_chat(turn_context: TurnContext, user_query: str):
     if not user_query:
         return "في انتظار اوامرك"
@@ -352,7 +386,7 @@ async def voice_chat(turn_context: TurnContext, user_query: str):
     bot_id = activity.recipient.id
     return Activity(
     type=ActivityTypes.message,
-    from_property=ChannelAccount(id=bot_id),  # Bot as the sender
+    from_property=ChannelAccount(id="8:bot:MS-POC-COntact-Center-Voice-Bot-V2"),  # Bot as the sender
     text=response)
     # return response
 
@@ -370,5 +404,13 @@ class MyBot(ActivityHandler):
     ):
         for member in members_added:
             if member.id != turn_context.activity.recipient.id:
-                welcome_message = "مرحبًا! كيف يمكنني مساعدتك اليوم؟"
-                await turn_context.send_activity(welcome_message)
+                welcome_activity = Activity(               
+            type=ActivityTypes.message,
+            from_property=ChannelAccount(
+              id="8:bot:MS-POC-COntact-Center-Voice-Bot-V2"
+                #name="-------" # !!!! you can put the name of the bot if available 
+            ),
+            text="مرحبًا! كيف يمكنني مساعدتك اليوم؟"
+        )
+        
+        await turn_context.send_activity(welcome_activity)
