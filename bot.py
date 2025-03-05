@@ -395,7 +395,7 @@ async def voice_chat(turn_context: TurnContext, user_query: str):
     bot_id = activity.recipient.id
     return Activity(
         type=ActivityTypes.message,
-        from_property=ChannelAccount(id="8:bot:ms-poc-contact-center-voice-bot"),  # Bot as the sender
+        from_property=ChannelAccount(id="lcw"),  # Bot as the sender
         text=response
     )
 
