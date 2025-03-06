@@ -387,8 +387,17 @@ async def voice_chat(turn_context: TurnContext, user_query: str):
         logging.info("Goodbye command received.")
         return "مع السلامة"
     if detect_critical_issue(user_query):
-        logging.info("Critical issue detected in voice chat.")
-        return "هذه المشكلة تحتاج إلى تدخل بشري. سأقوم بالاتصال بخدمة العملاء لدعمك."
+        logging.info("Critical issue detected in voice chat. Adding escalation context.")
+        return Activity(
+            type=ActivityTypes.message,
+            text="هذه المشكلة تحتاج إلى تدخل بشري. سأقوم بالاتصال بخدمة العملاء لدعمك.",
+            channel_data={
+                "deliveryMode": "bridged",
+                "escalationContext": {  
+                    "BotHandoffTopic": "CreditCard" 
+                }
+            }
+        )
     response = await get_response(user_query)
     logging.info("Voice chat response: %s", response)
     activity: Activity = turn_context.activity
