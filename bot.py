@@ -393,11 +393,19 @@ async def voice_chat(turn_context: TurnContext, user_query: str):
     logging.info("Voice chat response: %s", response)
     activity: Activity = turn_context.activity
     bot_id = activity.recipient.id
+    #return Activity(
+     #   type=ActivityTypes.message,
+      #  from_property=ChannelAccount(id="lcw"),  # Bot as the sender
+       # text=response
+    #)
     return Activity(
         type=ActivityTypes.message,
-        from_property=ChannelAccount(id="lcw"),  # Bot as the sender
-        text=response
+        text=response,
+        channel_data={
+            "deliveryMode": "bridged"
+        }
     )
+    
 
 class MyBot(ActivityHandler):
     async def on_message_activity(self, turn_context: TurnContext):
@@ -412,13 +420,14 @@ class MyBot(ActivityHandler):
         logging.info("New members added to the conversation.")
         for member in members_added:
             if member.id != turn_context.activity.recipient.id:
-                welcome_activity = Activity(               
-                    type=ActivityTypes.message,
-                    from_property=ChannelAccount(
-                        id="8:bot:ms-poc-contact-center-voice-bot"
-                    ),
-                    text="مرحبًا! كيف يمكنني مساعدتك اليوم؟"
-                )
+                welcome_activity = Activity(
+                        type=ActivityTypes.message,
+                        text="مرحبًا! كيف يمكنني مساعدتك اليوم؟",
+                        channel_data={
+                            "deliveryMode": "bridged"
+                        }
+                    )
+                    
                 logging.info("welcome_activity: %s", welcome_activity)
                 logging.info("Sending welcome message.")
                 await turn_context.send_activity(welcome_activity)
