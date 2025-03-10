@@ -378,14 +378,32 @@ def detect_critical_issue(text):
     logging.info("No critical issue detected.")
     return False
 
+# Modified part in voice_chat function
 async def voice_chat(turn_context: TurnContext, user_query: str):
     logging.info("Voice chat started with query: %s", user_query)
     if not user_query:
         logging.info("Empty user query received.")
         return "في انتظار اوامرك"
-    if clean_text(user_query) in ["إنهاء", "خروج"]:
+
+    normalized_query = clean_text(user_query)
+
+    if normalized_query in ["إنهاء", "خروج"]:
         logging.info("Goodbye command received.")
         return "مع السلامة"
+
+    # Added escalation condition adapted from the provided C# code
+    if normalized_query == "escalate":  # <-- Modified line
+        logging.info("Escalation condition met. Adding escalation context.")
+        escalation_context = {"BotHandoffTopic": "CreditCard"}  # <-- Modified line
+        return Activity(
+            type=ActivityTypes.message,
+            text="سيتم تحويلك إلى ممثل خدمة العملاء لمساعدتك بشكل أفضل.",
+            channel_data={
+                "deliveryMode": "bridged",
+                "escalationContext": escalation_context  # <-- Modified line
+            }
+        )
+
     if detect_critical_issue(user_query):
         logging.info("Critical issue detected in voice chat. Adding escalation context.")
         return Activity(
@@ -393,27 +411,19 @@ async def voice_chat(turn_context: TurnContext, user_query: str):
             text="هذه المشكلة تحتاج إلى تدخل بشري. سأقوم بالاتصال بخدمة العملاء لدعمك.",
             channel_data={
                 "deliveryMode": "bridged",
-                "escalationContext": {  
-                    "BotHandoffTopic": "CreditCard" 
-                }
+                "escalationContext": {"BotHandoffTopic": "CreditCard"}
             }
         )
+
     response = await get_response(user_query)
     logging.info("Voice chat response: %s", response)
-    activity: Activity = turn_context.activity
-    bot_id = activity.recipient.id
-    #return Activity(
-     #   type=ActivityTypes.message,
-      #  from_property=ChannelAccount(id="lcw"),  # Bot as the sender
-       # text=response
-    #)
+
     return Activity(
         type=ActivityTypes.message,
         text=response,
-        channel_data={
-            "deliveryMode": "bridged"
-        }
+        channel_data={"deliveryMode": "bridged"}
     )
+
     
 
 class MyBot(ActivityHandler):
