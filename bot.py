@@ -388,14 +388,14 @@ async def voice_chat(turn_context: TurnContext, user_query: str):
         return "مع السلامة"
     if detect_critical_issue(user_query):
         logging.info("Critical issue detected in voice chat. Adding escalation context.")
-        # Create the Tags structure matching C# example
+        # Direct JSON object structure without serialization
         escalation_context = {
-            "Tags": json.dumps({
-                "Context": {
-                    "BotHandoffTopic": "CreditCard"  # Your context variables
-                },
-                "Type": 1  # Escalation type
-            })
+            "tags": {
+                "type": "Escalate",
+                "context": {
+                    "BotHandoffTopic": "CreditCard"
+                }
+            }
         }
         return Activity(
             type=ActivityTypes.message,
