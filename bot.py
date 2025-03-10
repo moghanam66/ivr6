@@ -378,52 +378,39 @@ def detect_critical_issue(text):
     logging.info("No critical issue detected.")
     return False
 
-# Modified part in voice_chat function
 async def voice_chat(turn_context: TurnContext, user_query: str):
     logging.info("Voice chat started with query: %s", user_query)
     if not user_query:
         logging.info("Empty user query received.")
         return "في انتظار اوامرك"
-
-    normalized_query = clean_text(user_query)
-
-    if normalized_query in ["إنهاء", "خروج"]:
+    if clean_text(user_query) in ["إنهاء", "خروج"]:
         logging.info("Goodbye command received.")
         return "مع السلامة"
-
-    # Added escalation condition adapted from the provided C# code
-    if normalized_query == "escalate":  # <-- Modified line
-        logging.info("Escalation condition met. Adding escalation context.")
-        escalation_context = {"BotHandoffTopic": "CreditCard"}  # <-- Modified line
-        return Activity(
-            type=ActivityTypes.message,
-            text="سيتم تحويلك إلى ممثل خدمة العملاء لمساعدتك بشكل أفضل.",
-            channel_data={
-                "deliveryMode": "bridged",
-                "escalationContext": escalation_context  # <-- Modified line
-            }
-        )
-
     if detect_critical_issue(user_query):
         logging.info("Critical issue detected in voice chat. Adding escalation context.")
+        # Create the Tags structure matching C# example
+        escalation_context = {
+            "Tags": json.dumps({
+                "Context": {
+                    "BotHandoffTopic": "CreditCard"  # Your context variables
+                },
+                "Type": 1  # Escalation type
+            })
+        }
         return Activity(
             type=ActivityTypes.message,
             text="هذه المشكلة تحتاج إلى تدخل بشري. سأقوم بالاتصال بخدمة العملاء لدعمك.",
-            channel_data={
-                "deliveryMode": "bridged",
-                "escalationContext": {"BotHandoffTopic": "CreditCard"}
-            }
+            channel_data=escalation_context
         )
-
     response = await get_response(user_query)
     logging.info("Voice chat response: %s", response)
-
     return Activity(
         type=ActivityTypes.message,
         text=response,
-        channel_data={"deliveryMode": "bridged"}
+        channel_data={
+            "deliveryMode": "bridged"
+        }
     )
-
     
 
 class MyBot(ActivityHandler):
